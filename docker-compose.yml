@@ -1,0 +1,81 @@
+version: "3"
+services:
+  broker:
+    container_name: broker
+    networks:
+      - broker
+    image: "docker.io/bitnami/rabbitmq:latest"
+    environment:
+      - RABBITMQ_PASSWORD=${broker_password}
+      - RABBITMQ_USERNAME=${broker_username}
+    ports:
+      - "4369:4369"
+      - "5672:5672"
+      - "25672:25672"
+      - "15672:15672"
+    volumes:
+      - /mnt/mpc_rabbitmq/bitnami:/bitnami
+
+  db:
+    image: postgres:9.6
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${db_user_name}
+      - POSTGRES_PASSWORD=${db_password}
+      - POSTGRES_DB=${db_name}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - /mnt/volume_mpc_data/pgdata:/var/lib/postgresql/data/pgdata
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  graphql-engine:
+    image: ${hasura_version}
+    ports:
+      - "5001:8080"
+    depends_on:
+      - db
+    restart: always
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://${db_user_name}:${db_password}@db:5432/${db_name}
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_ADMIN_SECRET: ${hasura_admin_pass}
+
+  webserver:
+    build: .
+    # image: mpc-etl:latest
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - ./logs:/srv/logs/
+    ports:
+      - "8080:8080"
+    command: gunicorn --workers=2 -b 0.0.0.0:8080 app:api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://webserver:8080"]
+      interval: 2s
+      timeout: 2s
+      retries: 5
+
+  worker:
+    build: .
+    # image: mpc-etl:latest
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - broker
+    volumes:
+      - ./logs:/srv/logs/
+    command: celery worker -A app.celery --loglevel=info --concurrency=10 -n worker@%h
+
+networks:
+  broker:
+    driver: bridge
