@@ -44,28 +44,29 @@ services:
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       HASURA_GRAPHQL_ADMIN_SECRET: ${hasura_admin_pass}
 
-  webserver:
+  flask:
     build: .
-    # image: mpc-etl:latest
+    container_name: flask
     restart: always
     env_file:
       - .env
     depends_on:
       - db
     volumes:
-      - ./logs:/srv/logs/
-    ports:
-      - "8080:8080"
-    command: gunicorn --workers=2 -b 0.0.0.0:8080 app:api
+      - ./:/var/www
+    command: gunicorn --workers=2 -b 0.0.0.0:8000 src.app:app
+    networks:
+      my-network:
+        aliases:
+          - flask-app
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://webserver:8080"]
+      test: ["CMD", "curl", "-f", "http://flask:8000"]
       interval: 2s
       timeout: 2s
       retries: 5
 
   worker:
     build: .
-    # image: mpc-etl:latest
     restart: always
     env_file:
       - .env
@@ -76,6 +77,19 @@ services:
       - ./logs:/srv/logs/
     command: celery worker -A app.celery --loglevel=info --concurrency=10 -n worker@%h
 
+  nginx:
+    image: nginx:1.15
+    container_name: nginx
+    volumes:
+      - ./scripts/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
+    networks:
+      - my-network
+    depends_on:
+      - flask
+
 networks:
+  my-network:
   broker:
     driver: bridge
