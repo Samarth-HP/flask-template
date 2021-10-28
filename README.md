@@ -1,6 +1,5 @@
 # Flask boilerplate template
-## includes boilerplate template for setting up a 
-- flask-project, 
+## includes boilerplate template for setting up a flask-project with:
 - nginx, 
 - celery, rabbit mq (broker), 
 - postgres-db, 
