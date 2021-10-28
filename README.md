@@ -1,5 +1,11 @@
 # Flask boilerplate template
-- includes boilerplate template for setting up a flask-project, nginx, celery, broker, postgres-db, logging, logstash
+## includes boilerplate template for setting up a 
+- flask-project, 
+- nginx, 
+- celery, rabbit mq (broker), 
+- postgres-db, 
+- logging, 
+- logstash
 
 ## Folder Structure
 ```
