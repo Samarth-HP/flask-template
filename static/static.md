@@ -1,0 +1,1 @@
+# Folder to store your static contents used in the project
