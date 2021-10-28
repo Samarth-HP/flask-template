@@ -14,9 +14,6 @@
 │   ├── default.conf ==> (conf file for nginx)
 │   └── init.sql     ==> (sql script to create tables and entries on docker build)
 ├── src
-│   ├── __pycache__
-│   │   ├── app.cpython-36.pyc
-│   │   └── app.cpython-39.pyc
 │   └── app.py
 ├── static
 ├── templates
