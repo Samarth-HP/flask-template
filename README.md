@@ -9,6 +9,8 @@
 ├── docker-compose.yml
 ├── logs
 │   └── logs.md
+├── tests
+│   └── test.md
 ├── requirements.txt
 ├── scripts
 │   ├── default.conf ==> (conf file for nginx)
