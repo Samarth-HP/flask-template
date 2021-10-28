@@ -9,17 +9,18 @@
 ├── docker-compose.yml
 ├── logs
 │   └── logs.md
-├── tests
-│   └── test.md
 ├── requirements.txt
 ├── scripts
 │   ├── default.conf ==> (conf file for nginx)
 │   └── init.sql     ==> (sql script to create tables and entries on docker build)
 ├── src
 │   └── app.py
-├── static
 ├── templates
+│   └── template.md
+├── static
+│   └── static.md
 ├── tests
+│   └── test.md
 ```
 
 ## Glossary:  
